@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Highcharts Semi-circle Pie Chart</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        #container {
+            #container {
+                background-color: #fff;
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            p,
+            label {
+                font-weight: bold;
+            }
+
+            #slider {
+                margin-top: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="text-align: center; margin-top: 30px; font-size: 24px; font-weight: bold;">
+        Cumulative Distribution of Titles
+    </div>
+    <div style="text-align: center; margin-top: 10px; font-size: 18px;">
+        Between Movie and TV Show Over the Years
+    </div>
+
+    <div id="slider" style="width: 80%; margin: 30px auto;"></div>
+    <p style="text-align: center;">
+        <label for="selected-year" style="font-weight: bold; font-size: 16px;">Selected Year:</label>
+        <input type="text" id="selected-year" readonly
+            style="border:0; color:#f6931f; font-weight:bold; font-size: 16px;">
+    </p>
+    <div id="container" style="height: 400px; min-width: 310px; max-width: 800px; margin: 20px auto"></div>
+
+    <script>
+        Papa.parse("titles_wiht_genres.csv", {
+            download: true,
+            header: true,
+            complete: function(results) {
+                var titlesData = results.data.map(function(row) {
+                    return {
+                        release_year: parseInt(row['release_year']),
+                        type: row['type']
+                    };
+                });
+                create_graph(titlesData)
+
+            }
+        });
+
+        function create_graph(titlesData){
+        $(function () {
+
+    
+            var minYear = 1980;
+            var maxYear = 2022;
+
+
+            $("#slider").slider({
+                min: minYear,
+                max: maxYear,
+                value: maxYear,
+                slide: function (event, ui) {
+                    $("#selected-year").val(ui.value);
+                    extract_data(ui.value);
+                }
+            });
+            $("#selected-year").val($("#slider").slider("value"));
+
+            function extract_data(year){
+                updateChart(year)
+            }
+        
+
+            function updateChart(year) {
+                var countMovie = 0, countShow = 0;
+                
+
+                for (var i = 0; i < titlesData.length; i++) {
+                    var title = titlesData[i];
+                    if (title["release_year"] <= year) {
+                        if (title["type"] === "MOVIE") {
+                            countMovie++;
+                        } else if (title["type"] === "SHOW") {
+                            countShow++;
+                        }
+                    }
+                }
+
+                var filteredData = [
+                    { "name": "MOVIE", "y": countMovie, "color": "#3498db" },
+                    { "name": "SHOW", "y": countShow, "color": "#e74c3c" }
+                ];
+
+                chart.series[0].setData(filteredData);
+            }
+
+            var chart = Highcharts.chart('container', {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+                title: {
+                    text: null
+                },
+                tooltip: {
+                    pointFormat: '{point.name}: <b>{point.y} Titles</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            connectorColor: 'silver'
+                        },
+                        startAngle: -90,
+                        endAngle: 90,
+                        center: ['50%', '75%'],
+                        size: '110%'
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Number of Titles',
+                    innerSize: '50%',
+                    data: [{ 'name': 'MOVIE', 'y': 3138 }, { 'name': 'SHOW', 'y': 1760 }]
+                }]
+            });
+        });
+    }
+    </script>
+
+</body>
+
+</html>

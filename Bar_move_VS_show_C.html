@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stacked Bar Chart using Highcharts</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+</head>
+<body>
+    <div id="container" style="min-width: 310px; height: 500px; margin: 0 auto"></div>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'bar'
+                },
+                title: {
+                    text: 'Count of Titles by Age Certification and Type'
+                },
+                xAxis: {
+                    categories: ['G', 'NC-17', 'PG', 'PG-13', 'R', 'TV-14', 'TV-G', 'TV-MA', 'TV-PG', 'TV-Y', 'TV-Y7'],
+                    title: {
+                        text: 'Age Certification'
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Count of Titles'
+                    }
+                },
+                legend: {
+                    reversed: true
+                },
+                plotOptions: {
+                    series: {
+                        stacking: 'normal'
+                    }
+                },
+                series: [{name: 'MOVIE', data: [73, 15, 220, 416, 524, 0, 0, 0, 0, 0, 0]},
+                         {name: 'SHOW', data: [0, 0, 0, 0, 0, 404, 70, 799, 156, 62, 98]}]
+            });
+        });
+    </script>
+</body>
+</html>

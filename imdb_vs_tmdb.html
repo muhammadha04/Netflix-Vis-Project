@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        /* Styling for the filter container */
+        #filterContainer {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 10px 0;
+            width: 200px;
+            box-shadow: 2px 2px 12px #aaa;
+        }
+
+        /* Styling for the filter labels */
+        #filterContainer label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container" style="min-width: 100; height: 400px; margin: 0 auto"></div>
+    <div id="filterContainer">
+        <label><input type="checkbox" id="movieCheckbox" checked> Movies</label>
+        <label><input type="checkbox" id="tvShowCheckbox" checked> TV Shows</label>
+    </div>
+
+
+    <script type="text/javascript">
+function generateChart(data) {
+    const movieFilter = document.getElementById('movieCheckbox').checked;
+    const tvShowFilter = document.getElementById('tvShowCheckbox').checked;
+
+    const imdb_bins = {};
+    const tmdb_bins = {};
+
+    data.forEach(row => {
+        if ((row.type === "MOVIE" && movieFilter) || (row.type === "SHOW" && tvShowFilter)) {  // Adjusted SHOW based on CSV data
+            if (row.imdb_score) {
+                const bin = (Math.floor(row.imdb_score * 2) / 2).toFixed(1);
+                imdb_bins[bin] = (imdb_bins[bin] || 0) + 1;
+            }
+            if (row.tmdb_score) {
+                const bin = (Math.floor(row.tmdb_score * 2) / 2).toFixed(1);
+                tmdb_bins[bin] = (tmdb_bins[bin] || 0) + 1;
+            }
+        }
+    });
+
+    const imdb_seriesData = Object.keys(imdb_bins).map(bin => [parseFloat(bin), imdb_bins[bin]]).sort((a, b) => a[0] - b[0]);
+    const tmdb_seriesData = Object.keys(tmdb_bins).map(bin => [parseFloat(bin), tmdb_bins[bin]]).sort((a, b) => a[0] - b[0]);
+
+    Highcharts.chart('container', {
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: 'Movie Count by Average Rating'
+        },
+        xAxis: {
+            title: {
+                text: 'Average Rating'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Movies Count'
+            }
+        },
+        series: [{
+            name: 'IMDB',
+            data: imdb_seriesData
+        },
+        {
+            name: 'TMDB',
+            data: tmdb_seriesData
+        }]
+    });
+}
+
+let parsedData;  // Declare a variable to store the parsed CSV data
+
+Papa.parse("titles.csv", {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    complete: function(results) {
+        parsedData = results.data;  // Store the parsed data in the variable
+        generateChart(parsedData);
+    }
+});
+
+document.getElementById('movieCheckbox').addEventListener('change', () => {
+    generateChart(parsedData);  // Use the stored data directly
+});
+
+document.getElementById('tvShowCheckbox').addEventListener('change', () => {
+    generateChart(parsedData);  // Use the stored data directly
+});
+</script>
+</body>
+</html>
